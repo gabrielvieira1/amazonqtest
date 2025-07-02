@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+ <title>AnyCompany Offices</title>
+ <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+ <h1>User Login</h1>
+ <form id="loginForm">
+  <label for="username">Username:</label>
+  <input type="text" id="username" name="username"><br><br>
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password"><br><br>
+  <button type="button" onclick="login()">Login</button>
+ </form>
+ <div id="welcomeMessage" style="display: none;"></div>
+ <div id="invalidMessage" class="invalid-message" style="display: none;"></div>
+
+ <div id="officeList" style="display: none;">
+  <h2>AnyCompany offices</h2>
+  <ul id="officeList"></ul>
+  <div id="imageContainer"></div>
+ </div>
+ <script>
+  //TODO: Insert API endpoint
+  const api_endpoint = ""
+  const authAndS3ListPath = "/lambda"
+  const getImagePath = "/office_image"
+
+
+  // Sanitize user input to prevent XSS
+  function sanitizeInput(input) {
+   return input.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function login() {
+   const username = document.getElementById('username').value;
+   const password = document.getElementById('password').value;
+   const welcomeMessage = document.getElementById('welcomeMessage');
+   const invalidMessage = document.getElementById('invalidMessage');
+
+   welcomeMessage.textContent = '';
+   invalidMessage.textContent = '';
+   welcomeMessage.style.display = 'none';
+   invalidMessage.style.display = 'none';
+
+   const requestBody = {
+    operation: "validate_user",
+    username: sanitizeInput(username),
+    password: sanitizeInput(password)
+   };
+
+   fetch(api_endpoint + "" + authAndS3ListPath, {
+    method: 'PUT', // Use the GET method
+    headers: {
+     'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+   })
+    .then(response => response.json())
+    .then(data => {
+
+     validUser = data;
+     if (validUser) {
+      welcomeMessage.textContent = `Welcome, ${username}!`;
+      welcomeMessage.style.display = 'block';
+      fetchOffices();
+     } else {
+      invalidMessage.textContent = 'Invalid username or password';
+      invalidMessage.style.display = 'block';
+     }
+    })
+    .catch(error => {
+     invalidMessage.textContent = 'Error fetching users';
+     invalidMessage.style.display = 'block';
+     console.error('Error fetching users:', error);
+    });
+
+  }
+
+  function fetchOffices() {
+   const requestBody = {
+    operation: 'list_s3',
+   };
+
+   fetch(api_endpoint + "" + authAndS3ListPath, {
+    method: 'PUT',
+    headers: {
+     'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+   })
+    .then(response => response.json())
+    .then(data => {
+     const offices = data;
+     createOfficeList(offices);
+    })
+    .catch(error => {
+     console.error('Error fetching S3 bucket contents:', error);
+    });
+  }
+
+  function createOfficeList(offices) {
+   const officeList = document.getElementById('officeList');
+   officeList.style.display = 'block';
+
+   console.log('Offices:', offices);
+
+   offices.forEach(office => {
+    const listItem = document.createElement('li');
+    const [name] = office.split('.');
+    listItem.textContent = name;
+    listItem.addEventListener('click', () => fetchAndDisplayImage(office));
+    officeList.appendChild(listItem);
+   });
+  }
+
+  function fetchAndDisplayImage(office) {
+   const [name, extension] = office.split('.');
+
+   const requestBody = {
+    operation: 'get_image',
+    image_key: office
+   };
+
+   fetch(api_endpoint + "" + getImagePath, {
+    method: 'PUT',
+    headers: {
+     'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+   })
+    .then(response => response.text())
+    .then(data => {
+     console.log('Image data:', data);
+
+     // Remove any existing image
+     const existingImage = document.getElementById('officeImage');
+     if (existingImage) {
+      existingImage.remove();
+     }
+
+     // Create a new image element
+     const imageElement = document.createElement('img');
+     imageElement.id = 'officeImage';
+     imageElement.src = `data:image/jpeg;base64,${data}`;
+
+     // Append the new image element to the imageContainer
+     const imageContainer = document.getElementById('imageContainer');
+     imageContainer.appendChild(imageElement);
+    })
+    .catch(error => console.error(error));
+  }
+
+ </script>
+</body>
+
+</html>

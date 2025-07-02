@@ -1,0 +1,79 @@
+/* Reset styles */
+* {
+ box-sizing: border-box;
+ margin: 0;
+ padding: 0;
+}
+
+/* Body styles */
+body {
+ font-family: Arial, sans-serif;
+ padding: 20px;
+}
+
+/* Header styles */
+h1 {
+ margin-bottom: 10px;
+}
+
+/* Form styles */
+form {
+ margin-bottom: 20px;
+}
+
+label {
+ display: inline-block;
+ width: 100px;
+ font-weight: bold;
+}
+
+input[type="text"],
+input[type="password"],
+textarea {
+ padding: 5px;
+ width: 200px;
+ border: 1px solid #ccc;
+ border-radius: 4px;
+}
+
+button {
+ padding: 5px 10px;
+ background-color: #4CAF50;
+ color: white;
+ border: none;
+ border-radius: 4px;
+ cursor: pointer;
+}
+
+button:hover {
+ background-color: #45a049;
+}
+
+/* Comments styles */
+#comments {
+ margin-top: 20px;
+}
+
+#comments p {
+ margin-bottom: 10px;
+ padding: 10px;
+ background-color: #f1f1f1;
+ border-radius: 4px;
+}
+
+.invalid-message {
+ color: red;
+ font-size: 1.2rem;
+ font-weight: bold;
+}
+
+#officeImage {
+ max-width: 65vw;
+ /* Set the maximum width to 50% of the viewport width */
+ height: auto;
+ /* Maintain aspect ratio */
+ display: block;
+ /* Remove any default inline spacing */
+ margin: 0 auto;
+ /* Center the image horizontally */
+}
